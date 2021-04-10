@@ -1,4 +1,5 @@
 import React from 'react'
+import {useStyle} from './hooks';
 
 interface CircleProps {
     w : number, 
@@ -8,9 +9,10 @@ interface CircleProps {
 }
 
 const Circle : React.FC<CircleProps> = (props : CircleProps) => {
-    const {onClick} = props 
+    const {onClick, w, h, scale} = props 
+    const {circleStyle} = useStyle(w, h, scale)
     return (
-        <div style = {{}} onClick = {() => onClick()}>
+        <div style = {circleStyle()} onClick = {() => onClick()}>
         </div>
     )
 }
