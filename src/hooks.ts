@@ -4,12 +4,48 @@ import {
     CSSProperties
 } from 'react'
 
-const scGap : number = 0.02 
-const delay : number = 20 
+const scGap : number = 0.01
+const delay : number = 3
 
 const maxScale : Function = (scale : number, i : number, n : number) : number => Math.max(0, scale - i / n)
 const divideScale : Function = (scale : number, i : number, n : number) : number => Math.min(1 / n, maxScale(scale, i, n)) * n 
 const sinify : Function = (scale : number) : number =>  Math.sin(scale * Math.PI)
+
+class Loop {
+    t : number = 0
+    running : boolean = false 
+    constructor(private cb : Function, private delay : number) {
+
+    }
+    start() {
+        if (!this.running) {
+            this.running = true 
+            this.loop()
+        }
+    }
+    loop() {
+        requestAnimationFrame(() => {
+            this.t++
+            if (this.t % this.delay == 0) {
+                this.cb()
+            }
+            if (this.running) {
+                this.loop()
+            }
+        })
+    }
+    stop() {
+        if (this.running) {
+            this.running = false 
+        }
+    }
+}
+
+const setCustomInterval = (cb : Function, delay : number) : Loop  => {
+    const loop : Loop = new Loop(cb, delay)
+    loop.start()
+    return loop 
+}
 
 export const useAnimatedScale = () => {
     const [scale, setScale] : [number, Function] = useState(0)
@@ -19,16 +55,16 @@ export const useAnimatedScale = () => {
         start() {
             if (!animated) {
                 setAnimated(true)
-                const interval = setInterval(() => {
+                const loop : Loop = setCustomInterval(() => {
                     setScale((prev : number) => {
                         if (prev > 1) {
                             setAnimated(false)
-                            clearInterval(interval)
+                            loop.stop()
                             return 0
                         }
                         return prev + scGap 
                     })
-                })
+                }, delay)
             }
         }
     }
@@ -66,6 +102,7 @@ export const useStyle = (w : number, h : number, scale : number) => {
             const height : string = `${size}px`
             const left : string = `${(w - size) * sf2}px`
             const top : string = `${h / 2 - size}px`
+            const borderRadius : string = '50%'
             const background : string = 'green'
             return {
                 position, 
@@ -73,7 +110,8 @@ export const useStyle = (w : number, h : number, scale : number) => {
                 height, 
                 left, 
                 top, 
-                background 
+                background,
+                borderRadius
             }
         },
 
@@ -89,7 +127,7 @@ export const useStyle = (w : number, h : number, scale : number) => {
                 height, 
                 top, 
                 left,
-                background 
+                background
             }
         }
     }
